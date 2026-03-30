@@ -108,8 +108,7 @@ function is_ETF(gram, case)
 end
 
 ### TO ADD
-# spark
-# contains_simplex
+# spark. this is NP-hard in general, and really should be a function of Phi, not the gram.
 
 function contains_simplex(s::Int, gram, case::String)
     ####################
@@ -143,6 +142,8 @@ function contains_simplex(s::Int, gram, case::String)
     if !iszero(a)
         (!iszero(ff(s)) && is_square(a*inv(ff(s)))) || throw(DomainError((a,s),"need a/s to be a square"));
         neg_a3bys3 = ff(-1)*(a^3)*inv(ff(s^3))
+
+        print("Just a heads up, I havent gotten to adding the sums of triple products condition. So the outputs are not guaranteed to be correct. Sorry\n\n")
 
         TripleCounter = 0;
         mat_list = [];
@@ -181,9 +182,33 @@ function contains_simplex(s::Int, gram, case::String)
             end
             jTuple = NewjTuple
         end 
-        Binder = jTuple
+        # I still need to ensure the simplices that are found are simplicies
+        # TODO: do that
+
+        jTuple
     else
-        throw(DomainError((a,s),"Havent gotten here yet"));
+        # Probably a better way to do this
+        print("Warning: this implementation is not guarantees to return correct outputs, when a != 0. Sorry\n\n")
+        flat_binder = [];
+        for inds in combinations(1:n, k)
+            sub_gram = gram[inds,inds];
+
+            # This is a bit of an issue,
+            # it could be the case that the k vectors selected in the frame are LI
+            # but are degenerate, so just checking the rank of the gram
+            # is not enough. Not sure how to deal with this atm. But for now
+            # just assume this isnt an issue.
+            if rank(sub_gram) == s
+                tight_bool, c = is_frame_tight(sub_gram);
+                if tight_bool
+                    simplex_row = zeros(Int, (n, 1));
+                    simplex_row[inds] .= 1;
+                    append!(flat_binder, simplex_row)
+                end
+            end
+        end
+
+        reshape(flat_binder, (n,Int(flat_binder.size[1]/n)))'
     end
 end
 
