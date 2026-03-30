@@ -28,13 +28,12 @@ hessa_sic = matrix(ff, [
 ]);
 hessa_gram = conjugate_transpose(hessa_sic)*hessa_sic;
 
-contains_simplex(3, hessa_gram, "U")
+binder_finder(hessa_gram, "U")
 ```
 
 ## Instructions for Case O
-Specify field, there are no restriction, other than it being finite.
+Specify finite field, of odd characteristic.
 ```julia
-using Oscar
 ff = GF(5,3,"a");
 ```
 Then specify `case="O"` when calling functions.
@@ -48,6 +47,9 @@ Phi = matrix(ff, [
    1 1 2  2  1  2  0  0  0  0     
 ])
 gram = transpose(Phi)*diagonal_matrix([ff(1),ff(1),ff(1),ff(2)])*Phi
+
+binder_finder(3, gram, "O")
 ```
+
 
 
