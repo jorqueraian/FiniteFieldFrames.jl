@@ -1,5 +1,6 @@
 using Oscar
 using LinearAlgebra
+using Printf
 
 
 ## Note: I will do everything on the level of gram matrices.
@@ -221,7 +222,7 @@ function binder_finder(s::Int, gram, case::String)::Matrix{Int}
 end
 
 
-function binder_finder(gram, case::String)::Matrix{Int}
+function binder_finder(gram, case::String, verbose::Bool=false)::Matrix{Int}
     ####################
     ###### Binder Finder
     ###### Code to find the embedded simplices (ETFs for their spans with one
@@ -258,6 +259,11 @@ function binder_finder(gram, case::String)::Matrix{Int}
 
     simplices = [];
     for ss in [ss1, ss2]
+        if verbose
+            print("Checking simplex dim: ");
+            println(ss);
+        end
+
         jTuple = [];
         neg_a3bys3 = ff(-1)*(a^3)*inv(ff(ss[1]^3))
 
@@ -294,12 +300,18 @@ function binder_finder(gram, case::String)::Matrix{Int}
                     append!(actual_simps, ii);
                 end
             end
+            if verbose
+                @printf("Found %i simplices with s=2\n", actual_simps.size[1])
+            end
             append!(simplices, jTuple[actual_simps,:]')
             jTuple = jTuple[[i for i in 1:(jTuple.size[1]) if !(i in actual_simps)],:]
         end
 
         NewjTuple = [];
         for jTupleSize in 3:maximum(ss)  # should this be s? or is my python code wrong??
+            if verbose
+                @printf("Looking for subsets of %i with equal TPs\n", jTupleSize+1)
+            end
             for ii in 1:(jTuple.size[1])
                 Indices = findall(x->x==1, jTuple[ii,:]);
                 Indicator = (sum(Int.(jTuple[:,Indices] * (ones(Int, (jTupleSize,jTupleSize))-I[1:jTupleSize,1:jTupleSize]) .== (jTupleSize-1)),dims=2))' * jTuple
@@ -329,6 +341,9 @@ function binder_finder(gram, case::String)::Matrix{Int}
                     if iszero(tp_sums .- (ff(s+1)*inv(ff(s))*a*b))
                         append!(actual_simps, ii);
                     end
+                end
+                if verbose
+                    @printf("Found %i simplices with s=2\n", actual_simps.size[1])
                 end
                 append!(simplices, jTuple[actual_simps,:]')
                 jTuple = jTuple[[i for i in 1:(jTuple.size[1]) if !(i in actual_simps)],:]

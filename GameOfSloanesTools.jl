@@ -1,7 +1,9 @@
 using DelimitedFiles
+using Oscar
+using LinearAlgebra
 
-function matrix_from_file(file_loc::String, d::Int, n::Int)
-    m = readdlm(file_loc);
+function matrix_from_file(file_loc::String, d::Int, n::Int)::Union{Matrix{BigFloat}, Matrix{Complex{BigFloat}}}
+    m = readdlm(file_loc, BigFloat);
     real_mat = reshape(m[1:d*n], (d,n));
     comp_mat = reshape(m[d*n+1:2*d*n], (d,n));
     if iszero(comp_mat)
@@ -11,7 +13,7 @@ function matrix_from_file(file_loc::String, d::Int, n::Int)
     end
 end
 
-function real_etf_to_case_O(gram::Matrix{Float64}, d::Int, char::Int)
+function real_etf_to_case_O(gram::Matrix{BigFloat}, d::Int, char::Int)::FqMatrix
     n = size(gram)[1];
     (n == size(gram)[2]) || throw(DomainError(size(gram),"gram must be square"));
 

@@ -1,4 +1,4 @@
-using Oscar
+include("Frames.jl")
 
 
 function maximal_case_O_etf(d::Int, p::Int)
