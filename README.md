@@ -1,6 +1,7 @@
 # FiniteFieldFrames
 Julia implementation (using Oscar.jl) to work with frames of finite fields
 Everything is done on the level of gram matrices.
+The Oscar.jl documentation can be found [here](https://docs.oscar-system.org/stable/) with installation instructions [here](https://www.oscar-system.org/install).
 
 ## Instructions for Case U
 Pick base field using Oscar. Examples below:
@@ -50,6 +51,52 @@ gram = transpose(Phi)*diagonal_matrix([ff(1),ff(1),ff(1),ff(2)])*Phi
 
 binder_finder(3, gram, "O")
 ```
+
+## Basic Functionality
+Better documentation writeup coming soon
+
+To check is a provided Gram matrix `gram` is the gram matrix of a frame in either case "O" or "U" use
+
+```julia
+(frame_bool, d) = is_frame(gram, case)
+```
+Returns a boolean `frame_bool` if the provided matrix is the gram matrix of a frame for some `d`-dimensional space. if `frame_bool=false` then `d=nothing`.
+
+To check if a given Gram matrix `gram` is the gram matrix of a collection of equiangular vectors is case "O" or "U" use
+```julia
+(equiangular_bool, a, b) = is_equiangular(gram, case)
+```
+Returns a boolean `equiangular_bool` and parameters `a`, the common magnatudes of the vectors, and `b` the angle. If `equiangular_bool=false` then both `a` and `b` will be `nothing`.
+
+To check if the Gram matrix of a frame `gram`, is the Gram matrix of a tight frame use
+```julia
+(tight_bool, c) = is_frame_tight(gram)
+```
+Returns a boolean `equiangular_bool` and parameters `c` where `G^2=cG`.
+
+To check if the matrix `gram` is the Gram matrix of an ETF use
+```julia
+(etf_bool, a, b, c, d) = is_ETF(gram, case)
+```
+which calls all of the above functions.
+
+If `gram` is the Gram matrix of a frame, you can use 
+```julia
+Phi = reconstruct_frame_from_gram(gram, case)
+```
+which will attempt to construct the corresponding frame. I am not sure I have got this one completly working yet, but I think it is atleast basically correct. In case O, the output `Phi` may live in a field extension of the field in which `gram` was defined in. The output will always be in the real model, so the the corresponding scalar product is just the dot product.
+
+
+## Constructions 
+
+## Binder Finder
+This is not guaranteed to return a complete binder, or maybe it can be proven that it does in some cases, idk. wait I think i did that. TODO: did i do this?
+
+
+Referneces
+https://arxiv.org/pdf/2012.12977
+https://arxiv.org/pdf/2012.13642
+https://arxiv.org/abs/2505.12175
 
 
 
