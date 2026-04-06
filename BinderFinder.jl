@@ -48,7 +48,7 @@ function binder_finder(gram, case::String, verbose::Bool=false)::Matrix{Int}
     ss2 = [s for s in allss if !(s in ss1)];
 
     simplices = [];
-    for ss in [ss2, ss1]
+    for ss in [ss1, ss2]
         if ss.size[1] == 0
             continue
         end
@@ -121,6 +121,7 @@ function binder_finder(gram, case::String, verbose::Bool=false)::Matrix{Int}
                 jTuple[ii,:] = zeros(Int, (1,jTuple.size[2]))
             end
             jTuple = NewjTuple
+            NewjTuple = [];
             
             if jTupleSize in ss
                 s = jTupleSize

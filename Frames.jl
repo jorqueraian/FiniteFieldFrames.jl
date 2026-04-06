@@ -156,8 +156,8 @@ function reconstruct_frame_from_gram(gram, case)
     end
 
     Psi = [A; B]
-    # Qs: Is Psi always rank = n?, ie is it a basis?
-    rank(Psi) == n || throw(DomainError(ff,"frankly i was hopping this wouldnt happen, like every, but it did."));
+    rank(Psi) == n || throw(error("Something did not work. Constructed matrix Psi should have rank n, but it does not."));
+    
     if case == "O"
         form = symmetric_form(gram);
         m = symmetric_form(diagonal_matrix([[ff(1) for i in 1:d]; [ff(0) for i in (d+1):n]]));
@@ -165,17 +165,16 @@ function reconstruct_frame_from_gram(gram, case)
         # C * gram * C' = daig(1 1 1 1... 0 0 0....)
         # D = C^{-1}
         (cong_bool, D) =  is_congruent(form, m);
-        cong_bool || throw(DomainError(ff,"Ok i need to code in the option that you have a symmetric form congruent to the non-square case. I think because we are doing a field extension this wont happen. So if you see this i was wrong."));
+        cong_bool || throw(error("Frankly I thought this was impossible."));
 
         Phi = transpose(D)[1:d, :]
-        (rank(Phi) == d) || throw(DomainError(Phi,"Something broke and I dont know why"));
-
+        (rank(Phi) == d) || throw(error("Something broke and I dont know why"));
     elseif case == "U"
         form = hermitian_form(gram);
         m = hermitian_form(diagonal_matrix([[ff(1) for i in 1:d]; [ff(0) for i in (d+1):n]]));
         (cong_bool, D) =  is_congruent(form, m);
         Phi = conjugate_transpose(D)[1:d, :]
-        (rank(Phi) == d) || throw(DomainError(Phi,"Something broke and I dont know why"));
+        (rank(Phi) == d) || throw(error("Something broke and I dont know why"));
     end
     Phi
 end
