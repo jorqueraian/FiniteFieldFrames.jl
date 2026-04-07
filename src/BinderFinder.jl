@@ -1,5 +1,4 @@
-include("Frames.jl")
-
+export binder_finder
 
 function binder_finder(gram, case::String, verbose::Bool=false)::Matrix{Int}
     ####################

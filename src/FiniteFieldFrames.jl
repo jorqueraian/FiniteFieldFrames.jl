@@ -1,11 +1,18 @@
+module FiniteFieldFrames
+
+export is_frame, case_O_frame_discr_is_square, is_equiangular, is_frame_tight, is_ETF, reconstruct_frame_from_gram
+
 using Oscar
 using LinearAlgebra
 using Printf
+using DelimitedFiles
+
+include("Constructions.jl")
+include("BinderFinder.jl")
+include("GameOfSloanesTools.jl")
 
 
-## Note: I will do everything on the level of gram matrices.
-
-function is_frame(gram, case::String)
+function is_frame(gram::FqMatrix, case::String)::Tuple{Bool,Union{Int64,Nothing}}
     n = size(gram)[1];
     (n == size(gram)[2]) || throw(DomainError(size(gram),"gram must be square"));
     d = rank(gram);
@@ -28,7 +35,7 @@ function is_frame(gram, case::String)
     end
 end
 
-function case_O_frame_discr_is_square(gram)
+function case_O_frame_discr_is_square(gram::FqMatrix)::Bool
     n = size(gram)[1];
     (n == size(gram)[2]) || throw(DomainError(size(gram),"gram must be square"));
     frame_bool, d = is_frame(gram, "O");
@@ -42,7 +49,7 @@ function case_O_frame_discr_is_square(gram)
     end
 end
 
-function is_equiangular(gram, case::String)
+function is_equiangular(gram::FqMatrix, case::String)::Tuple{Bool,Union{FqFieldElem,Nothing},Union{FqFieldElem,Nothing}}
     if case == "O"
         gram_mat_modulus_sqrd = gram.^2;
     elseif case == "U"
@@ -69,7 +76,7 @@ function is_equiangular(gram, case::String)
 end
 
 
-function is_frame_tight(gram)
+function is_frame_tight(gram::FqMatrix)::Tuple{Bool,Union{FqFieldElem,Nothing}}
     # Note that this algorithm assumes that gram is the gram of a frame.
     # if tight, will return tight constant and the rank.
     n = size(gram)[1];
@@ -97,7 +104,7 @@ function is_frame_tight(gram)
     end
 end
 
-function is_ETF(gram, case)
+function is_ETF(gram::FqMatrix, case::String)::Tuple{Bool,Union{FqFieldElem,Nothing},Union{FqFieldElem,Nothing},Union{FqFieldElem,Nothing},Union{Int64,Nothing}}
     frame_bool, d = is_frame(gram, case);
     if !frame_bool
         return (false, nothing, nothing, nothing, nothing)
@@ -109,7 +116,7 @@ function is_ETF(gram, case)
 end
 
 
-function reconstruct_frame_from_gram(gram, case)
+function reconstruct_frame_from_gram(gram::FqMatrix, case::String)::FqMatrix
     # see Thm 3.13 and 3.15 of citation needed.
     n = size(gram)[1];
     (n == size(gram)[2]) || throw(DomainError(size(gram),"gram must be square"));
@@ -178,3 +185,5 @@ function reconstruct_frame_from_gram(gram, case)
     end
     Phi
 end
+
+end # module FiniteFieldFrames

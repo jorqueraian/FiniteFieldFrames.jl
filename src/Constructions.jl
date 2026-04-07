@@ -1,5 +1,4 @@
-include("Frames.jl")
-
+export maximal_case_O_etf, real_etf_to_case_O, real_dx2d_etf
 
 function maximal_case_O_etf(d::Int, p::Int)
     (d > 1 && gcd(p, d-7) == p) || throw(DomainError((d, p),"p must divide d-7"));
