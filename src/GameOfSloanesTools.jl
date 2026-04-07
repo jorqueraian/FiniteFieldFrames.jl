@@ -1,8 +1,6 @@
-using DelimitedFiles
-using Oscar
-using LinearAlgebra
+export load_matrix_from_file
 
-function matrix_from_file(file_loc::String, d::Int, n::Int)::Union{Matrix{BigFloat}, Matrix{Complex{BigFloat}}}
+function load_matrix_from_file(file_loc::String, d::Int, n::Int)::Union{Matrix{BigFloat}, Matrix{Complex{BigFloat}}}
     m = readdlm(file_loc, BigFloat);
     real_mat = reshape(m[1:d*n], (d,n));
     comp_mat = reshape(m[d*n+1:2*d*n], (d,n));
@@ -12,4 +10,3 @@ function matrix_from_file(file_loc::String, d::Int, n::Int)::Union{Matrix{BigFlo
         real_mat + im*comp_mat
     end
 end
-
