@@ -103,9 +103,37 @@ which will attempt to construct the corresponding frame. I am not sure I have go
 
 
 ## Constructions 
+The following would construct a 12x78 ETF in Case O for a finite field of characteristic 5.
+```julia
+gram = maximal_case_O_etf(12, 5);
+```
+
+The following would construct a 41x82 ETF in Case O for a finite field of characteristic 7.
+```julia
+gram = real_etf_to_case_O(real_dx2d_etf(3^4), Int((3^4+1)/2), 7);
+```
+
+The following would construct a 7x14 ETF in Case U over the finite field of 27^2 elements.
+```julia
+Phi = etf_from_pmod_diff_set([0,4,6,7,8,11,13], 14, 27);
+gram = conjugate_transpose(Phi)*Phi;
+```
+or the following produces a 7x18 ETF in case U over the finite field of 125^2 elements
+```julia
+k=2
+p=3*k-1 # 5
+q=p^3
+# sorting not needed
+D = sort([[x for x in 0:3:(9k-1)]; 1])
+Phi = etf_from_pmod_diff_set(D, 9k, q);
+gram = conjugate_transpose(Phi)*Phi;
+```
+This method does not verify that D is a p-modular difference set.
+
+
 
 ## Binder Finder
-This is not guaranteed to return a complete binder, or maybe it can be proven that it does in some cases, idk. wait I think i did that. TODO: did i do this?
+Binder Finder finds the binder of a frame in Case O or U.
 
 
 Referneces

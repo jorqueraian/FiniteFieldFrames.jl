@@ -1,6 +1,6 @@
 export binder_finder
 
-function binder_finder(gram, case::String, verbose::Bool=false)::Matrix{Int}
+function binder_finder(gram::FqMatrix, case::String, verbose::Bool=false)::Matrix{Int}
     ####################
     ###### Binder Finder
     ###### Citation: "Equiangular tight frames that contain regular simplices,"
@@ -147,7 +147,7 @@ function binder_finder(gram, case::String, verbose::Bool=false)::Matrix{Int}
 end
 
 
-function binder_finder(s::Int, gram, case::String)::Matrix{Int}
+function binder_finder(s::Int, gram::FqMatrix, case::String)::Matrix{Int}
     # While the other version picks values of s automatically,
     # you can specify a specific s here.
     # This also allows a != 0, BUT it will give you the warning 
