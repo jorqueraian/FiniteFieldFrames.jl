@@ -11,13 +11,13 @@ Activate and load this package. In the FiniteFieldFrames directory
 ```julia
 pkg> activate .  # Press ']' to enter the Pkg REPL mode.
 ```
-or
+then 
 ```julia
 julia> using FiniteFieldFrames
 ```
 
 ## Instructions for Case U
-Pick base field using Oscar. Examples below:
+Pick base field using Oscar(Oscar is loaded by FiniteFieldFrames.jl but not imported). Examples below:
 ```julia
 using Oscar
 base_f = GF(5,3,"b");
