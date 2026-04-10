@@ -1,5 +1,8 @@
 export binder_finder
 
+import Base.Threads: @threads
+
+
 function binder_finder(gram::FqMatrix, case::String, verbose::Bool=false)::Matrix{Int}
     ####################
     ###### Binder Finder
@@ -99,12 +102,14 @@ function binder_finder(gram::FqMatrix, case::String, verbose::Bool=false)::Matri
             jTuple = jTuple[[i for i in 1:(jTuple.size[1]) if !(i in actual_simps)],:]
         end
 
-        NewjTuple = [];
         for jTupleSize in 3:maximum(ss)  # should this be s? or is my python code wrong??
             if verbose
                 @printf("Looking for subsets of %i with equal TPs\n", jTupleSize+1)
             end
-            for ii in 1:(jTuple.size[1])
+            
+            # creating an array for each iteration of the next loop.
+            threadedNewjTuples = [Array{Int}(undef, 0, 0)  for ii in 1:(jTuple.size[1])];
+            @threads for ii in 1:(jTuple.size[1])
                 Indices = findall(x->x==1, jTuple[ii,:]);
                 Indicator = (sum(Int.(jTuple[:,Indices] * (ones(Int, (jTupleSize,jTupleSize))-I[1:jTupleSize,1:jTupleSize]) .== (jTupleSize-1)),dims=2))' * jTuple
                 Indicator[Indices] .= 0
@@ -112,15 +117,10 @@ function binder_finder(gram::FqMatrix, case::String, verbose::Bool=false)::Matri
                 A = kron(ones(Int, (NewIndices.size[1],1)),jTuple[ii,:]')
                 A[:,NewIndices] = I[1:NewIndices.size[1],1:NewIndices.size[1]]
 
-                if NewjTuple.size[1] == 0 || ii == 1
-                    NewjTuple = A;
-                else
-                    NewjTuple = [NewjTuple; A];
-                end
-                jTuple[ii,:] = zeros(Int, (1,jTuple.size[2]))
+                @inbounds threadedNewjTuples[ii] = A
+                @inbounds jTuple[ii,:] = zeros(Int, (1,jTuple.size[2]))
             end
-            jTuple = NewjTuple
-            NewjTuple = [];
+            jTuple = vcat(threadedNewjTuples...)
             
             if jTupleSize in ss
                 s = jTupleSize
