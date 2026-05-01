@@ -3,14 +3,11 @@ export binder_finder
 import Base.Threads: @threads
 
 
-function binder_finder(gram::FqMatrix, case::String, verbose::Bool=false)::Matrix{Int}
+function binder_finder(gram::FqMatrix; case::Symbol, verbose::Bool=false)::Matrix{Int}
     ####################
     ###### Binder Finder for frame over finite fields when a != 0
-    ###### Algorithm over R and C was original implemented in "Equiangular tight frames that contain regular simplices,"
-    ###### by Matthew Fickus, John Jasper, Emily J. King, Dustin G. Mixon, 2017
-    ###### Modified for finite fields by Ian Jorquera, based on the work in 
-    ###### 
-    ###### by Ian Jorquera, Emily J. King
+    ###### Algorithm over R and C was original implemented in [6] with Matlab.
+    ###### Modified for finite fields by Ian Jorquera, based on [5]
     ######
     ###### Last updated: April 1st, 2026
     #####################
@@ -20,7 +17,7 @@ function binder_finder(gram::FqMatrix, case::String, verbose::Bool=false)::Matri
 
     ff = gram.base_ring;
     char = Int(characteristic(ff));
-    etf_bool, a, b, c, d = is_ETF(gram, case);
+    etf_bool, a, b, c, d = is_ETF(gram, case=case);
     (etf_bool) || throw(DomainError(gram,"gram must be the gram of and ETF"));
 
     (!iszero(a)) || throw(DomainError(a,"need a != 0 for this implementation, try specifying a particular value for s as the first parameter"));
@@ -146,7 +143,7 @@ function binder_finder(gram::FqMatrix, case::String, verbose::Bool=false)::Matri
 end
 
 
-function binder_finder(s::Int, gram::FqMatrix, case::String)::Matrix{Int}
+function binder_finder(s::Int, gram::FqMatrix; case::Symbol)::Matrix{Int}
     ####################
     ###### This version of Binder Finder for frame over finite fields should really only be used when a = 0.
     ###### A particular value for s must be provided.
@@ -157,7 +154,7 @@ function binder_finder(s::Int, gram::FqMatrix, case::String)::Matrix{Int}
     k = s+1;
     (n == size(gram)[2]) || throw(DomainError(size(gram),"gram must be square"));
     ff = gram.base_ring;
-    etf_bool, a, b, c, d = is_ETF(gram, case);
+    etf_bool, a, b, c, d = is_ETF(gram, case=case);
     (etf_bool) || throw(DomainError(gram,"gram must be the gram of and ETF"));
 
     (a^2 == ff(s^2)*b) || throw(DomainError((a^2, ff(s^2)*b),"Must satisfy that a^2=s^2*b which the inputs do not."));
@@ -220,7 +217,7 @@ function binder_finder(s::Int, gram::FqMatrix, case::String)::Matrix{Int}
         end
         jTuple[actual_simps,:]
     else
-        Phi = reconstruct_frame_from_gram(gram, case);
+        Phi = reconstruct_frame_from_gram(gram, case=case);
 
         flat_binder = [];
         for inds in combinations(1:n, k)

@@ -8,22 +8,23 @@ using Printf
 using DelimitedFiles
 
 include("Constructions.jl")
+include("Constructions_char0.jl")
 include("BinderFinder.jl")
 include("GameOfSloanesTools.jl")
 
 
-function is_frame(gram::FqMatrix, case::String)::Tuple{Bool,Union{Int64,Nothing}}
+function is_frame(gram::FqMatrix; case::Symbol)::Tuple{Bool,Union{Int64,Nothing}}
     n = size(gram)[1];
     (n == size(gram)[2]) || throw(DomainError(size(gram),"gram must be square"));
     d = rank(gram);
 
-    if case == "O"
+    if case == :O
         if iszero(gram - transpose(gram))
             return (true, d)
         else
             return (false, nothing)
         end
-    elseif case == "U"
+    elseif case == :U
         (degree(gram.base_ring) == 2) || throw(DomainError(gram.base_ring,"in Case U, the provided field must be finite and must be a degree 2 extension"));
         if iszero(gram - conjugate_transpose(gram))
             return (true, d)
@@ -31,7 +32,7 @@ function is_frame(gram::FqMatrix, case::String)::Tuple{Bool,Union{Int64,Nothing}
             return (false, nothing)
         end
     else
-        throw(DomainError(case,"I can only do Case O and U at the moment"));
+        throw(DomainError(case,"Case not recognized: I can only accept :O or :U"));
     end
 end
 
@@ -49,14 +50,14 @@ function case_O_frame_discr_is_square(gram::FqMatrix)::Bool
     end
 end
 
-function is_equiangular(gram::FqMatrix, case::String)::Tuple{Bool,Union{FqFieldElem,Nothing},Union{FqFieldElem,Nothing}}
-    if case == "O"
+function is_equiangular(gram::FqMatrix; case::Symbol)::Tuple{Bool,Union{FqFieldElem,Nothing},Union{FqFieldElem,Nothing}}
+    if case == :O
         gram_mat_modulus_sqrd = gram.^2;
-    elseif case == "U"
+    elseif case == :U
         (degree(gram.base_ring) == 2) || throw(DomainError(gram.base_ring,"in Case U, the provided field must be finite and must be a degree 2 extension"));
         gram_mat_modulus_sqrd = norm.(gram);
     else
-        throw(DomainError(case,"I can only do Case O and U at the moment"));
+        throw(DomainError(case,"Case not recognized: I can only accept :O or :U"));
     end
 
     n = size(gram)[1];
@@ -104,31 +105,31 @@ function is_frame_tight(gram::FqMatrix)::Tuple{Bool,Union{FqFieldElem,Nothing}}
     end
 end
 
-function is_ETF(gram::FqMatrix, case::String)::Tuple{Bool,Union{FqFieldElem,Nothing},Union{FqFieldElem,Nothing},Union{FqFieldElem,Nothing},Union{Int64,Nothing}}
-    frame_bool, d = is_frame(gram, case);
+function is_ETF(gram::FqMatrix; case::Symbol)::Tuple{Bool,Union{FqFieldElem,Nothing},Union{FqFieldElem,Nothing},Union{FqFieldElem,Nothing},Union{Int64,Nothing}}
+    frame_bool, d = is_frame(gram, case=case);
     if !frame_bool
         return (false, nothing, nothing, nothing, nothing)
     else
-        equiangular_bool, a, b = is_equiangular(gram, case);
+        equiangular_bool, a, b = is_equiangular(gram, case=case);
         tight_bool, c = is_frame_tight(gram);
         return ((equiangular_bool && tight_bool), a, b, c, d);
     end
 end
 
 
-function reconstruct_frame_from_gram(gram::FqMatrix, case::String)::FqMatrix
+function reconstruct_frame_from_gram(gram::FqMatrix; case::Symbol)::FqMatrix
     # see Thm 3.13 and 3.15 of https://arxiv.org/pdf/2012.12977
     n = size(gram)[1];
     (n == size(gram)[2]) || throw(DomainError(size(gram),"gram must be square"));
 
-    frame_bool, d = is_frame(gram, case);
+    frame_bool, d = is_frame(gram, case=case);
     frame_bool || throw(DomainError(size(gram),"gram must be the Gram matrix of a frame"));
 
     ff = gram.base_ring;
 
-    if case == "O"
+    if case == :O
         q = 1;
-    elseif case == "U"
+    elseif case == :U
         (degree(ff) == 2) || throw(DomainError(ff,"in Case U, the provided field must be finite and must be a degree 2 extension"));
         q = Int(sqrt(size(ff)));
     end
@@ -140,7 +141,7 @@ function reconstruct_frame_from_gram(gram::FqMatrix, case::String)::FqMatrix
         end
     end
     
-    if case == "O"
+    if case == :O
         for i in 1:n
             num = gram[i,i]- transpose(A[:,i])*A[:,i]
             if !is_square(num)
@@ -154,7 +155,7 @@ function reconstruct_frame_from_gram(gram::FqMatrix, case::String)::FqMatrix
     B = diagonal_matrix(ff(0), n, n);
     
     for i in 1:n 
-        if case == "O"
+        if case == :O
             B[i,i] = sqrt(gram[i,i]- transpose(A[:,i])*A[:,i])
         else
             Kx, x = ff["x"];
@@ -165,7 +166,7 @@ function reconstruct_frame_from_gram(gram::FqMatrix, case::String)::FqMatrix
     Psi = [A; B]
     rank(Psi) == n || throw(error("Something did not work. Constructed matrix Psi should have rank n, but it does not."));
     
-    if case == "O"
+    if case == :O
         form = symmetric_form(gram);
         m = symmetric_form(diagonal_matrix([[ff(1) for i in 1:d]; [ff(0) for i in (d+1):n]]));
         #(cong_bool, C) =  is_congruent(m, form);
@@ -176,7 +177,7 @@ function reconstruct_frame_from_gram(gram::FqMatrix, case::String)::FqMatrix
 
         Phi = transpose(D)[1:d, :]
         (rank(Phi) == d) || throw(error("Something broke and I dont know why"));
-    elseif case == "U"
+    elseif case == :U
         form = hermitian_form(gram);
         m = hermitian_form(diagonal_matrix([[ff(1) for i in 1:d]; [ff(0) for i in (d+1):n]]));
         (cong_bool, D) =  is_congruent(form, m);

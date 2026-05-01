@@ -1,6 +1,8 @@
-export maximal_case_O_etf, real_etf_to_case_O, real_dx2d_etf, etf_from_pmod_diff_set
+export etf_from_triangular_graph, real_etf_to_case_O, etf_from_pmod_diff_set, etf_from_modular_hadamard
 
-function maximal_case_O_etf(d::Int, p::Int)::FqMatrix
+function etf_from_triangular_graph(d::Int, p::Int)::FqMatrix
+    # This construction comes from Theorem 5.4 in [2].
+    # Constructs a d by ((d^2-d)/2) ETF in Case O, as long as p divides d-7.
     (d > 1 && gcd(p, d-7) == p) || throw(DomainError((d, p),"p must divide d-7"));
 
     n = Int(d*(d+1)/2);
@@ -25,21 +27,24 @@ end
 
 
 function etf_from_pmod_diff_set(D, n, q)
+    # This construction comes from Theorem 5.7 in [1].
+    # Constructs a d=|D| by n ETF in Case U, as long as n divides q+1 
+    # and D is a p-modular difference set. 
+    # This construction does not verify that D is p-modular difference set.
     (e, b) = is_power(q);
     (is_prime(b)) || throw(DomainError(q, "input must be a prime power: q=p^k"));
     (gcd(n, q+1)==n) || throw(DomainError((n,q), "n must divide q+1"));
-    ## TODO: check that D is a p-mod difference set for Z/nZ
     
     base_ff = GF(q);
-    ## I dont think this is guaranteed to be the mult gen? 
-    ## It would be as long as Oscar is using Conway Polynomials.
-    ## gen(K/L) is the generator of K with respect to L, but by default L=F_p, 
+    
+    ## In general, gen will not return a multiplicative generator.
+    ## But becasue base_ff is defined over the prime subfield, it will!
     base_ff_gen = gen(base_ff)
     Kx, x = base_ff["x"];
     ff = GF(x^2-base_ff_gen, "a");
     
-    ## I dont know how to find a multiplicative generator, 
-    ## other then by doing this or something. Which is very slow.
+    ## becasue ff is defined as a field extention, gen would give a 
+    ## generator with respect to the base_field.
     ff_gen = nothing
     for r in ff
         ff_gen = r
@@ -55,6 +60,10 @@ end
 
 
 function real_etf_to_case_O(gram::Matrix{BigFloat}, d::Int, char::Int)::FqMatrix
+    # This construction comes from Proposition 3.2 in [2].
+    # Constructs an d'xn ETF in case O from a real dxn ETF. 
+    # d'<= d with equality depending on char.
+    
     n = size(gram)[1];
     (n == size(gram)[2]) || throw(DomainError(size(gram),"gram must be square"));
 
@@ -76,30 +85,12 @@ function real_etf_to_case_O(gram::Matrix{BigFloat}, d::Int, char::Int)::FqMatrix
 end
 
 
-function real_dx2d_etf(prime_power::Int)::Matrix{BigFloat}
-    (e, b) = is_power(prime_power);
-    (is_prime(b) && (gcd(e,2)==2 || gcd(b-3, 4)==1 )) || throw(DomainError(prime_power, "input must be a prime power: p^k, such that k is even or p is not 3 mod 4"))
-    ff = GF(b^e);
+function etf_from_modular_hadamard(modHadamard::FqMatrix, return_gram::Bool=true)::FqMatrix
+    # This construction comes from Theorem 2 in [4].
+    # Constructs a dxd^2 ETF in case U, given a modular hadamard defined over 
+    # a quadratic extension of a finite field such that x^2+1 does not split in 
+    # the base field and d = 8 mod characteristic.
 
-    a = sqrt(BigFloat(prime_power))
-
-    conf_mat = ones(BigFloat, (b^e+1, b^e+1));
-    for (i,x) in Iterators.enumerate(ff)
-        for (j,y) in Iterators.enumerate(ff)
-            if i == j 
-                conf_mat[i,j]=a;
-            elseif !is_square(y-x)
-                conf_mat[i,j]=-1;
-            end
-        end
-    end
-    conf_mat[b^e+1, b^e+1] = a;
-
-    conf_mat
-end
-
-function maximal_case_U_etf(modHadamard::FqMatrix, return_gram::Bool=true)::FqMatrix
-    ## Construction from https://arxiv.org/pdf/2506.20778
     d = size(modHadamard)[1];
     (d == size(modHadamard)[2]) || throw(DomainError(size(modHadamard),"Modular Hadamard must be square"));
     
