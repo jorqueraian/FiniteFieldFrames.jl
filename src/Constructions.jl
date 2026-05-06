@@ -184,7 +184,7 @@ function etf_from_singer_diff_set(D, p::T, k::T, r::T; verify_mult_gen::Bool=fal
 
     w = ff_gen^BigInt((BigInt(q)^2-1)/d);
 
-    translation = matrix(ff, I(d)[[[i for i in 2:d]; 1],:]);
+    perm = [[i for i in 2:d]; 1];
     modulation = diagonal_matrix([ w^x for x in 0:(d-1)]);
 
     one_D = zeros(Int,(d,1));
@@ -192,8 +192,22 @@ function etf_from_singer_diff_set(D, p::T, k::T, r::T; verify_mult_gen::Bool=fal
     one_D = matrix(ff, one_D);
 
     Phi = matrix(ff, zeros(Int,(d,d^2)));
-    slices = [(ind, s-1,t-1) for (ind, (s,t)) in Iterators.enumerate([(s,t) for s in 1:Int(d) for t in 1:Int(d)])];
-    map(x->Phi[:,x[1]]=modulation^x[2]*translation^x[3]*one_D, slices);
+    
+    ind = 1;
+    for s in 0:Int(d-1)
+        for t in 0:Int(d-1)
+            if s == 0 
+                if t == 0
+                    Phi[:,ind] = one_D
+                else
+                    Phi[:,ind] = modulation*Phi[:,ind-1]
+                end
+            else
+                Phi[:,ind] = Phi[perm,ind-d]
+            end
+            ind += 1;
+        end
+    end
 
     if return_gram
         conjugate_transpose(Phi)*Phi

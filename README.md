@@ -140,9 +140,17 @@ gram = etf_from_singer_diff_set([0,1,5,11], 2, 6, 3);
 ```
 would construct a 13x169 ETF over the finite field of 64^2 elements. A database containing many difference sets can be found [here](https://www.dmgordon.org/diffset/). The format in which our constructions take in difference sets is the same as in this database.
 
+The following would construct a 73x5329 ETF in case U over the field of (7^12)^2 elements.
+```julia
+gram = etf_from_singer_diff_set([0,1,17,39,41,44,48,54,62], 7, 12, 8);
+```
+Due to the size of this ETF, this construction is slow.
+
 It should be noted that this construction, in addition to the construction from p-modular difference sets, relies on having a multiplicative generator of the field.
 Since Oscar.jl is using Nemo.jl which is using FLINT, constructing a finite field with `GF(p,deg)` will attempt to instantiate a finite field using a Conway Polynomial, if possible. In which case any root of such a polynomial is a multiplicative generator.
-However Conway polynomials come from a precompiled database (see Frank Lübeck's database [here](https://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/index.html)) and if a needed Conway polynomial is not found, the finite field will be implemented using a random irreducible polynomial. In which case the resulting construction will likely not be an ETF. You can pass the argument `verify_mult_gen=true` in which case this construction will first verify that the defining polynomial is a Conway polynomial.
+However Conway polynomials come from a precompiled database (see Frank Lübeck's database [here](https://www.math.rwth-aachen.de/~Frank.Luebeck/data/ConwayPol/index.html)) and if a needed Conway polynomial is not found, the finite field will be implemented using a random irreducible polynomial. 
+In which case the resulting construction will likely not be an ETF. 
+You can pass the argument `verify_mult_gen=true` in which case this construction will first verify that the defining polynomial is a Conway polynomial, and a multiplicative generator is easily accessible.
 
 ## Binder Finder
 Binder Finder finds the binder of a frame in Case O or U.
